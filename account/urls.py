@@ -41,6 +41,5 @@ urlpatterns = [
     ChangePassword.as_view(),
     name='change_password'),
    
-    #reset password:post method hbe example innovative.com/reset-password/<token>/{"new_password":"fhjehhffjf"}/
-    #reset password (authenticated user)  body {"old password":"fhjehhffjf","new_password":"fhjehhffjf"}/
+   
 ]

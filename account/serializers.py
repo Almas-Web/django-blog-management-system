@@ -1,5 +1,3 @@
-# accounts/serializers.py
-
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
 from .models import CustomUser
@@ -27,6 +25,14 @@ class UserSerializer(serializers.ModelSerializer):
             }
         }
 
+    def validate_email(self, value):
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "A user with this email already exists."
+            )
+
+        return value
+
     def create(self, validated_data):
         user = CustomUser(**validated_data)
 
@@ -42,9 +48,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     def send_email(self, user):
 
-        # verification_link = f"http://127.0.0.1:8000/api/account/verify-email/{user.verification_token}/"
-
-        # Prepare things for sending mail
         verification_link = self.context['request'].build_absolute_uri(
             reverse(
                 viewname='verify_email',
@@ -87,6 +90,7 @@ class UserLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
+
 class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -100,8 +104,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         return instance
 
+
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
+
 
 class ResetPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(
@@ -123,6 +129,7 @@ class ResetPasswordSerializer(serializers.Serializer):
             )
 
         return data
+
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(

@@ -161,5 +161,7 @@ class MyBlogsView(generics.ListAPIView):
     pagination_class = BlogPagination
 
     def get_queryset(self):
-        return Blog.objects.filter(author=self.request.user)
-
+        return Blog.objects.filter(
+        author=self.request.user
+    ).order_by('-created_at')
+        
