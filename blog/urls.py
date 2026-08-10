@@ -5,14 +5,14 @@ from .views import (
     BlogCreateView,
     BlogUpdateView,
     BlogDeleteView,
-    MyBlogsView
+    MyBlogsView,
 )
 
 urlpatterns = [
     path('', BlogListView.as_view(), name='blog-list'),
     path('create/', BlogCreateView.as_view(), name='blog-create'),
     path('<int:id>/', BlogDetailView.as_view(), name='blog-detail'),
-    path('update/<int:id>/', BlogUpdateView.as_view(), name='blog-update'),
-    path('delete/<int:id>/', BlogDeleteView.as_view(), name='blog-delete'),
+    path('<int:id>/update/', BlogUpdateView.as_view(), name='blog-update'),
+    path('<int:id>/delete/', BlogDeleteView.as_view(), name='blog-delete'),
     path('my-blogs/', MyBlogsView.as_view(), name='my-blogs'),
 ]

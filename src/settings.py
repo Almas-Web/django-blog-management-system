@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'blog',
 
     # Third Party Apps
+    'django_filters',
     'rest_framework',
     'rest_framework_simplejwt',
 ]
