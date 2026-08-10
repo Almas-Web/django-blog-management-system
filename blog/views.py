@@ -5,13 +5,14 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .models import Blog
-from .serializers import BlogSerializer, BlogCreateUpdateSerializer
+from .serializers import BlogSerializer, BlogCreateUpdateSerializer, BlogSummarySerializer
 from .permissions import IsAuthorOrReadOnly
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse
+from .services.llm import LLMService
 
 
 class BlogPagination(PageNumberPagination):
@@ -164,4 +165,34 @@ class MyBlogsView(generics.ListAPIView):
         return Blog.objects.filter(
         author=self.request.user
     ).order_by('-created_at')
+
+
+class BlogSummaryView(generics.GenericAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSummarySerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+    def post(self, request, id):
+        blog = self.get_object()
+
+        prompt = f"""
+Summarize the following blog post clearly and concisely.
+
+Title:
+{blog.title}
+
+Content:
+{blog.content}
+
+Return only the summary.
+"""
+
+        llm_service = LLMService()
+        summary = llm_service.generate(prompt)
+
+        return Response(
+            {"summary": summary},
+            status=status.HTTP_200_OK,
+        )
         

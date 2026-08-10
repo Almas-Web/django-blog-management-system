@@ -6,6 +6,7 @@ from .views import (
     BlogUpdateView,
     BlogDeleteView,
     MyBlogsView,
+    BlogSummaryView,
 )
 
 urlpatterns = [
@@ -14,5 +15,7 @@ urlpatterns = [
     path('<int:id>/', BlogDetailView.as_view(), name='blog-detail'),
     path('<int:id>/update/', BlogUpdateView.as_view(), name='blog-update'),
     path('<int:id>/delete/', BlogDeleteView.as_view(), name='blog-delete'),
+    path( '<int:id>/summarize/', BlogSummaryView.as_view(), name='blog-summarize',),
     path('my-blogs/', MyBlogsView.as_view(), name='my-blogs'),
+    
 ]

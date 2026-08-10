@@ -13,3 +13,6 @@ class BlogCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
         fields = [  'title','content']
+
+class BlogSummarySerializer(serializers.Serializer):
+    summary = serializers.CharField(read_only=True)
