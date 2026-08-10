@@ -2,6 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from blog.models import Blog
+from unittest.mock import patch
 
 
 @pytest.fixture
@@ -399,3 +400,59 @@ def test_create_blog_invalid_data(api_client, user):
 
     assert response.status_code == 400
     assert "title" in response.data
+# BLOG SUMMARY - LLM
+
+@pytest.mark.django_db
+@patch("blog.views.LLMService")
+def test_blog_summary(mock_llm_service, api_client, user, blog):
+    api_client.force_authenticate(user=user)
+
+    mock_llm_service.return_value.generate.return_value = (
+        "This is a summarized version of the blog."
+    )
+
+    response = api_client.post(
+        f"/api/blogs/{blog.id}/summarize/"
+    )
+
+    assert response.status_code == 200
+    assert response.data["summary"] == (
+        "This is a summarized version of the blog."
+    )
+
+    mock_llm_service.return_value.generate.assert_called_once()
+
+
+@pytest.mark.django_db
+def test_unauthenticated_cannot_summarize_blog(api_client, blog):
+    response = api_client.post(
+        f"/api/blogs/{blog.id}/summarize/"
+    )
+
+    assert response.status_code == 401
+
+
+@pytest.mark.django_db
+@patch("blog.views.LLMService")
+def test_blog_summary_sends_blog_data_to_llm(
+    mock_llm_service,
+    api_client,
+    user,
+    blog,
+):
+    api_client.force_authenticate(user=user)
+
+    mock_llm_service.return_value.generate.return_value = "Test summary"
+
+    response = api_client.post(
+        f"/api/blogs/{blog.id}/summarize/"
+    )
+
+    assert response.status_code == 200
+
+    # Get the prompt sent to LLM
+    prompt = mock_llm_service.return_value.generate.call_args[0][0]
+
+    assert blog.title in prompt
+    assert blog.content in prompt
+    assert "Return only the summary." in prompt

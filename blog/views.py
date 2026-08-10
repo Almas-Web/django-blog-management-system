@@ -1,36 +1,47 @@
-from rest_framework import generics
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .models import Blog
-from .serializers import BlogSerializer, BlogCreateUpdateSerializer, BlogSummarySerializer
+from .serializers import (
+    BlogSerializer,
+    BlogCreateUpdateSerializer,
+    BlogSummarySerializer,
+)
 from .permissions import IsAuthorOrReadOnly
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-from .services.llm import LLMService
+
+from .services.llm import (
+    LLMService,
+    LLMQuotaError,
+    LLMUnavailableError,
+)
 
 
 class BlogPagination(PageNumberPagination):
     page_size = 5
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
     max_page_size = 10
 
 
 @extend_schema(
-    tags=['Blog'],
+    tags=["Blog"],
     summary="List all blogs",
-    description="Retrieve a paginated list of all blog posts. Supports search, filtering, and ordering.",
+    description=(
+        "Retrieve a paginated list of all blog posts. "
+        "Supports search, filtering, and ordering."
+    ),
     responses={
         200: BlogSerializer(many=True),
     },
 )
 class BlogListView(generics.ListAPIView):
-    queryset = Blog.objects.all().order_by('-created_at')
+    queryset = Blog.objects.all().order_by("-created_at")
     serializer_class = BlogSerializer
     pagination_class = BlogPagination
 
@@ -40,14 +51,14 @@ class BlogListView(generics.ListAPIView):
         OrderingFilter,
     ]
 
-    search_fields = ['title', 'content']
-    filterset_fields = ['author']
-    ordering_fields = ['title', 'created_at', 'updated_at']
-    ordering = ['-created_at']
+    search_fields = ["title", "content"]
+    filterset_fields = ["author"]
+    ordering_fields = ["title", "created_at", "updated_at"]
+    ordering = ["-created_at"]
 
 
 @extend_schema(
-    tags=['Blog'],
+    tags=["Blog"],
     summary="Retrieve a blog",
     description="Retrieve the details of a specific blog post using its ID.",
     responses={
@@ -60,13 +71,16 @@ class BlogListView(generics.ListAPIView):
 class BlogDetailView(generics.RetrieveAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSerializer
-    lookup_field = 'id'
+    lookup_field = "id"
 
 
 @extend_schema(
-    tags=['Blog'],
+    tags=["Blog"],
     summary="Create a blog",
-    description="Create a new blog post. The authenticated user is automatically assigned as the author.",
+    description=(
+        "Create a new blog post. "
+        "The authenticated user is automatically assigned as the author."
+    ),
     request=BlogCreateUpdateSerializer,
     responses={
         201: BlogSerializer,
@@ -74,7 +88,10 @@ class BlogDetailView(generics.RetrieveAPIView):
             description="Invalid request data"
         ),
         401: OpenApiResponse(
-            description="Authentication credentials were not provided or are invalid"
+            description=(
+                "Authentication credentials were not provided "
+                "or are invalid"
+            )
         ),
     },
 )
@@ -90,14 +107,17 @@ class BlogCreateView(generics.CreateAPIView):
 
         return Response(
             BlogSerializer(self.blog).data,
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
 
 @extend_schema(
-    tags=['Blog'],
+    tags=["Blog"],
     summary="Update a blog",
-    description="Update a blog post. Only the author of the blog can update it.",
+    description=(
+        "Update a blog post. "
+        "Only the author of the blog can update it."
+    ),
     request=BlogCreateUpdateSerializer,
     responses={
         200: BlogSerializer,
@@ -105,7 +125,10 @@ class BlogCreateView(generics.CreateAPIView):
             description="Invalid request data"
         ),
         401: OpenApiResponse(
-            description="Authentication credentials were not provided or are invalid"
+            description=(
+                "Authentication credentials were not provided "
+                "or are invalid"
+            )
         ),
         403: OpenApiResponse(
             description="You do not have permission to modify this blog"
@@ -119,17 +142,23 @@ class BlogUpdateView(generics.UpdateAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogCreateUpdateSerializer
     permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
-    lookup_field = 'id'
+    lookup_field = "id"
 
 
 @extend_schema(
-    tags=['Blog'],
+    tags=["Blog"],
     summary="Delete a blog",
-    description="Delete a blog post. Only the author of the blog can delete it.",
+    description=(
+        "Delete a blog post. "
+        "Only the author of the blog can delete it."
+    ),
     responses={
         204: None,
         401: OpenApiResponse(
-            description="Authentication credentials were not provided or are invalid"
+            description=(
+                "Authentication credentials were not provided "
+                "or are invalid"
+            )
         ),
         403: OpenApiResponse(
             description="You do not have permission to delete this blog"
@@ -142,17 +171,23 @@ class BlogUpdateView(generics.UpdateAPIView):
 class BlogDeleteView(generics.DestroyAPIView):
     queryset = Blog.objects.all()
     permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
-    lookup_field = 'id'
+    lookup_field = "id"
 
 
 @extend_schema(
-    tags=['Blog'],
+    tags=["Blog"],
     summary="List my blogs",
-    description="Retrieve all blog posts created by the currently authenticated user.",
+    description=(
+        "Retrieve all blog posts created by "
+        "the currently authenticated user."
+    ),
     responses={
         200: BlogSerializer(many=True),
         401: OpenApiResponse(
-            description="Authentication credentials were not provided or are invalid"
+            description=(
+                "Authentication credentials were not provided "
+                "or are invalid"
+            )
         ),
     },
 )
@@ -163,15 +198,41 @@ class MyBlogsView(generics.ListAPIView):
 
     def get_queryset(self):
         return Blog.objects.filter(
-        author=self.request.user
-    ).order_by('-created_at')
+            author=self.request.user
+        ).order_by("-created_at")
 
 
+@extend_schema(
+    tags=["Blog"],
+    summary="Generate AI summary",
+    description=(
+        "Generate a concise AI-powered summary "
+        "of a specific blog post."
+    ),
+    responses={
+        200: BlogSummarySerializer,
+        401: OpenApiResponse(
+            description=(
+                "Authentication credentials were not provided "
+                "or are invalid"
+            )
+        ),
+        404: OpenApiResponse(
+            description="Blog not found"
+        ),
+        429: OpenApiResponse(
+            description="AI service quota has been exhausted"
+        ),
+        503: OpenApiResponse(
+            description="AI service is currently unavailable"
+        ),
+    },
+)
 class BlogSummaryView(generics.GenericAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogSummarySerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'id'
+    lookup_field = "id"
 
     def post(self, request, id):
         blog = self.get_object()
@@ -189,10 +250,33 @@ Return only the summary.
 """
 
         llm_service = LLMService()
-        summary = llm_service.generate(prompt)
+
+        try:
+            summary = llm_service.generate(prompt)
+
+        except LLMQuotaError:
+            return Response(
+                {
+                    "detail": (
+                        "AI service quota has been exhausted. "
+                        "Please try again later."
+                    )
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
+        except LLMUnavailableError:
+            return Response(
+                {
+                    "detail": (
+                        "AI service is currently unavailable. "
+                        "Please try again later."
+                    )
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
 
         return Response(
             {"summary": summary},
             status=status.HTTP_200_OK,
         )
-        
