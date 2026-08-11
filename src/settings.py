@@ -3,13 +3,19 @@ from datetime import timedelta
 import os
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
-#SECURITY WARNING: keep the secret key used in production secret!
+load_dotenv(BASE_DIR / ".env")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+
+# SECURITY
+
 SECRET_KEY = os.getenv("SECRET_KEY")
+
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = os.getenv(
@@ -18,27 +24,32 @@ ALLOWED_HOSTS = os.getenv(
 ).split(",")
 
 
-# Application definition
+# APPLICATIONS
 
 INSTALLED_APPS = [
+    # Django Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Third Party Apps
     'corsheaders',
+    'django_filters',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'drf_spectacular',
 
     # Our Apps
     'account',
     'blog',
-
-    # Third Party Apps
-    'django_filters',
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'drf_spectacular',
 ]
+
+
+# MIDDLEWARE
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,10 +61,17 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+# CORS
+
 CORS_ALLOWED_ORIGINS = []
 
 
+# URL / TEMPLATE / WSGI
+
 ROOT_URLCONF = 'src.urls'
+
 
 TEMPLATES = [
     {
@@ -71,11 +89,11 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'src.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+# DATABASE
 
 DATABASES = {
     'default': {
@@ -89,27 +107,37 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+# PASSWORD VALIDATION
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'UserAttributeSimilarityValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'MinimumLengthValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'CommonPasswordValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'NumericPasswordValidator'
+        ),
     },
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
+# INTERNATIONALIZATION
 
 LANGUAGE_CODE = 'en-us'
 
@@ -120,39 +148,54 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+# STATIC FILES
 
 STATIC_URL = 'static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+
+# MEDIA FILES
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+
+# DEFAULT PRIMARY KEY
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Email settings (enable 2FA in gmail , generate app password)
+# EMAIL
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD =os.getenv("EMAIL_HOST_PASSWORD")
 
-# REST Framework Authentication Settings
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+
+# REST FRAMEWORK
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_SCHEMA_CLASS': (
+        'drf_spectacular.openapi.AutoSchema'
+    ),
 
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # Pagination
+    'DEFAULT_PAGINATION_CLASS': (
+        'rest_framework.pagination.PageNumberPagination'
+    ),
     'PAGE_SIZE': 5,
     'PAGE_SIZE_QUERY_PARAM': 'page_size',
     'MAX_PAGE_SIZE': 10,
 
+    # Throttling
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle',
@@ -164,24 +207,41 @@ REST_FRAMEWORK = {
     },
 }
 
+
+# JWT CONFIGURATION
+
+SIMPLE_JWT = {
+    # Access token
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+
+    # Refresh token
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+
+    # Refresh token rotation
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+
+    # Login tracking
+    'UPDATE_LAST_LOGIN': False,
+
+    # Signing
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+
+    # Authorization header
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+
+# API DOCUMENTATION
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Django Blog Management API',
     'DESCRIPTION': 'Production-style Blog Management API',
     'VERSION': '1.0.0',
 }
 
-# JWT Settings
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-}
-
-# Media Settings
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-
-# User Model
+# CUSTOM USER MODEL
 
 AUTH_USER_MODEL = 'account.CustomUser'
