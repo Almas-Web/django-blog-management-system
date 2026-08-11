@@ -81,7 +81,10 @@ SECURE_HSTS_PRELOAD = False
 
 # CORS
 
-CORS_ALLOWED_ORIGINS = []
+
+CORS_ALLOWED_ORIGINS = [
+    "https://django-blog-management-system.onrender.com",
+]
 
 
 # URL / TEMPLATE / WSGI
