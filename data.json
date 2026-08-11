@@ -1,0 +1,121 @@
+[
+{
+  "model": "account.customuser",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$f7lEJEH9R3msSLS6g78F5q$N4dSHmRhHBcD9DOO2DtGNHBQMn79HSwPuZVU0Qwx2Yw=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "example",
+    "first_name": "",
+    "last_name": "",
+    "email": "example@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-08T16:33:37.850Z",
+    "is_verified": false,
+    "verification_token": "pQnE2W1cRwxVIEPM07aivkwZcset1lCQ",
+    "bio": "",
+    "image": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "account.customuser",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$iDY1K9GuU24aqbBfz7bAfX$uNAMjRGWF+TOP32lwbqyWmXxL/uzOKOkIkfPzbTp72o=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "almas",
+    "first_name": "",
+    "last_name": "",
+    "email": "almashossen67@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-08T16:35:59.735Z",
+    "is_verified": true,
+    "verification_token": null,
+    "bio": "",
+    "image": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "account.customuser",
+  "fields": {
+    "password": "pbkdf2_sha256$870000$JzZQ8tbL3qAWH9tLiRuTka$HOJW+SR3tVVkuXBfOPvOJEQc30Z4ClrRnMNW2MCJWi4=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "almas_khan",
+    "first_name": "",
+    "last_name": "",
+    "email": "almas@yopmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-09T16:14:38.479Z",
+    "is_verified": true,
+    "verification_token": null,
+    "bio": "Django & FastAPI Backend Developer",
+    "image": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "blog.blog",
+  "pk": 1,
+  "fields": {
+    "title": "Simple",
+    "content": "Simple is better than complex",
+    "slug": "simple_-9223372036854417599",
+    "author": [
+      "almas"
+    ],
+    "created_at": "2026-08-10T07:14:22.612Z",
+    "updated_at": "2026-08-10T07:14:22.612Z"
+  }
+},
+{
+  "model": "blog.blog",
+  "pk": 2,
+  "fields": {
+    "title": "My First Blog Updated",
+    "content": "This is my updated first blog post.",
+    "slug": "my-first-blog_-9223372036854417599",
+    "author": [
+      "almas"
+    ],
+    "created_at": "2026-08-10T13:25:13.622Z",
+    "updated_at": "2026-08-10T13:30:48.786Z"
+  }
+},
+{
+  "model": "blog.blog",
+  "pk": 3,
+  "fields": {
+    "title": "Swagger Test Blog",
+    "content": "This blog is created from Swagger documentation.",
+    "slug": "swagger-test-blog_-9223372036850608319",
+    "author": [
+      "almas"
+    ],
+    "created_at": "2026-08-10T14:14:58.564Z",
+    "updated_at": "2026-08-10T14:14:58.564Z"
+  }
+},
+{
+  "model": "blog.blog",
+  "pk": 4,
+  "fields": {
+    "title": "Swagger Test Blog 2",
+    "content": "This blog is created from Swagger documentation.",
+    "slug": "swagger-test-blog-2_-9223372036850608319",
+    "author": [
+      "almas"
+    ],
+    "created_at": "2026-08-10T14:18:05.378Z",
+    "updated_at": "2026-08-10T14:18:05.378Z"
+  }
+}
+]

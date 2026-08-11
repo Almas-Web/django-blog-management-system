@@ -47,6 +47,7 @@ def test_user_signup():
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == ["test@example.com"]
 
+
 @pytest.mark.django_db
 @override_settings(
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend"
@@ -86,6 +87,7 @@ def test_signup_with_duplicate_email():
 
     assert second_response.status_code == status.HTTP_400_BAD_REQUEST
 
+
 @pytest.mark.django_db
 def test_signup_with_missing_required_data():
     client = APIClient()
@@ -101,8 +103,8 @@ def test_signup_with_missing_required_data():
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-
     assert "password" in response.data
+
 
 @pytest.mark.django_db
 def test_user_login():
@@ -131,6 +133,7 @@ def test_user_login():
     assert "access_token" in response.data
     assert "refresh_token" in response.data
 
+
 @pytest.mark.django_db
 def test_user_login_with_invalid_credentials():
     client = APIClient()
@@ -156,6 +159,7 @@ def test_user_login_with_invalid_credentials():
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.data["details"] == "Invalid credentials"
 
+
 @pytest.mark.django_db
 def test_user_login_with_unverified_user():
     client = APIClient()
@@ -180,6 +184,7 @@ def test_user_login_with_unverified_user():
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
     assert response.data["details"] == "Email is not verified yet!"
+
 
 @pytest.mark.django_db
 def test_verify_email():
@@ -208,6 +213,7 @@ def test_verify_email():
     assert user.is_verified is True
     assert user.verification_token is None
 
+
 @pytest.mark.django_db
 def test_verify_email_with_invalid_token():
     client = APIClient()
@@ -221,6 +227,7 @@ def test_verify_email_with_invalid_token():
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.data["details"] == "Invalid token"
+
 
 @pytest.mark.django_db
 def test_verify_email_already_verified():
@@ -243,6 +250,8 @@ def test_verify_email_already_verified():
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.data["details"] == "Email already verified!"
+
+
 @pytest.mark.django_db
 @override_settings(
     EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend"
@@ -271,13 +280,12 @@ def test_resend_verification_email():
 
     user.refresh_from_db()
 
-    # New verification token should be generated
     assert user.verification_token is not None
     assert user.verification_token != "old-token"
 
-    # Email should be sent
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == ["resend@example.com"]
+
 
 @pytest.mark.django_db
 def test_resend_verification_email_user_not_found():
@@ -293,6 +301,8 @@ def test_resend_verification_email_user_not_found():
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert response.data["details"] == "User with this email doesn't exist!"
+
+
 @pytest.mark.django_db
 def test_resend_verification_email_already_verified():
     client = APIClient()
@@ -315,6 +325,7 @@ def test_resend_verification_email_already_verified():
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.data["details"] == "Email already verified!"
+
 
 @pytest.mark.django_db
 @override_settings(
@@ -343,12 +354,11 @@ def test_forgot_password_existing_user():
         "Password reset link has been sent to your email."
     )
 
-    # Reset email should be sent
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == ["forgot@example.com"]
 
-    # Email should contain reset information
     assert "Reset Your Password" in mail.outbox[0].subject
+
 
 @pytest.mark.django_db
 def test_forgot_password_non_existing_user():
@@ -369,8 +379,8 @@ def test_forgot_password_non_existing_user():
         "a password reset link has been sent."
     )
 
-    # No email should be sent
     assert len(mail.outbox) == 0
+
 
 @pytest.mark.django_db
 def test_reset_password():
@@ -415,6 +425,8 @@ def test_reset_password():
 
     assert user.check_password("NewPassword123")
     assert not user.check_password("OldPassword123")
+
+
 @pytest.mark.django_db
 def test_reset_password_invalid_uid():
     client = APIClient()
@@ -436,6 +448,8 @@ def test_reset_password_invalid_uid():
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.data["details"] == "Invalid password reset link."
+
+
 @pytest.mark.django_db
 def test_reset_password_invalid_token():
     client = APIClient()
@@ -469,6 +483,8 @@ def test_reset_password_invalid_token():
     assert response.data["details"] == (
         "Invalid or expired password reset token."
     )
+
+
 @pytest.mark.django_db
 def test_reset_password_password_mismatch():
     client = APIClient()
@@ -509,6 +525,7 @@ def test_reset_password_password_mismatch():
         "Passwords do not match."
     )
 
+
 @pytest.mark.django_db
 def test_change_password():
     client = APIClient()
@@ -538,6 +555,8 @@ def test_change_password():
 
     assert user.check_password("NewPassword123")
     assert not user.check_password("OldPassword123")
+
+
 @pytest.mark.django_db
 def test_change_password_wrong_old_password():
     client = APIClient()
@@ -566,6 +585,8 @@ def test_change_password_wrong_old_password():
     assert response.data["old_password"][0] == (
         "Old password is incorrect."
     )
+
+
 @pytest.mark.django_db
 def test_change_password_same_password():
     client = APIClient()
@@ -594,6 +615,8 @@ def test_change_password_same_password():
     assert response.data["new_password"][0] == (
         "New password must be different from old password."
     )
+
+
 @pytest.mark.django_db
 def test_get_profile():
     client = APIClient()
@@ -617,6 +640,8 @@ def test_get_profile():
     assert response.data["username"] == "profileuser"
     assert response.data["email"] == "profile@example.com"
     assert response.data["bio"] == "My profile bio"
+
+
 @pytest.mark.django_db
 def test_update_profile():
     client = APIClient()
@@ -644,6 +669,8 @@ def test_update_profile():
     user.refresh_from_db()
 
     assert user.bio == "Updated bio"
+
+
 @pytest.mark.django_db
 def test_profile_unauthorized():
     client = APIClient()
