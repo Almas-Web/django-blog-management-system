@@ -3,14 +3,41 @@ services:
     image: postgres:17
     container_name: blog_postgres
     restart: unless-stopped
+
+    env_file:
+      - .env
+
     environment:
-      POSTGRES_DB: blog_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
     ports:
       - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: blog_django
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    command:
+      - sh
+      - -c
+      - |
+        python manage.py migrate
+        exec gunicorn src.wsgi:application --bind 0.0.0.0:8000
+
+    ports:
+      - "8000:8000"
+
+    depends_on:
+      - db
 
 volumes:
   postgres_data:
