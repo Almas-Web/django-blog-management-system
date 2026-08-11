@@ -43,6 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         user.save()
 
+        # Send verification email
         try:
             self.send_email(user=user)
         except Exception as e:
@@ -58,11 +59,11 @@ class UserSerializer(serializers.ModelSerializer):
                 kwargs={
                     'token': user.verification_token
                 }
-            ),
+            )
         )
 
-        # Render the email template
-        subject = 'Verify you email'
+        # Render email template
+        subject = 'Verify your email'
 
         html_content = render_to_string(
             'emails/verification_email.html',
@@ -72,7 +73,7 @@ class UserSerializer(serializers.ModelSerializer):
             }
         )
 
-        # Create an email message
+        # Create email message
         email = EmailMultiAlternatives(
             subject,
             "This is a plain text version of the email",
@@ -102,8 +103,16 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         fields = ["bio", "image"]
 
     def update(self, instance, validated_data):
-        instance.bio = validated_data.get('bio', instance.bio)
-        instance.image = validated_data.get('image', instance.image)
+        instance.bio = validated_data.get(
+            'bio',
+            instance.bio
+        )
+
+        instance.image = validated_data.get(
+            'image',
+            instance.image
+        )
+
         instance.save()
 
         return instance
@@ -158,7 +167,10 @@ class ChangePasswordSerializer(serializers.Serializer):
         if data["old_password"] == data["new_password"]:
             raise serializers.ValidationError(
                 {
-                    "new_password": "New password must be different from old password."
+                    "new_password": (
+                        "New password must be different "
+                        "from old password."
+                    )
                 }
             )
 
