@@ -4,6 +4,7 @@ from .models import CustomUser
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -42,7 +43,10 @@ class UserSerializer(serializers.ModelSerializer):
 
         user.save()
 
-        self.send_email(user=user)
+        try:
+            self.send_email(user=user)
+        except Exception as e:
+            print(f"Email sending failed: {e}")
 
         return user
 
@@ -72,7 +76,7 @@ class UserSerializer(serializers.ModelSerializer):
         email = EmailMultiAlternatives(
             subject,
             "This is a plain text version of the email",
-            "from@example.com",
+            settings.EMAIL_HOST_USER,
             [user.email]
         )
 
